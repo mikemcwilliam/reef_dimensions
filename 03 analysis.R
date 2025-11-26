@@ -19,14 +19,15 @@ c2 <- read.csv("data/output/metricsLTMP.csv")
 
 ggplot(c2, aes(f.biomass))+geom_histogram()+scale_x_log10()
 
-df1 <- read.csv("data/output/metrics_v1biomass.csv")
+df1 <- read.csv("data/data.csv")
+#df1 <- read.csv("data/output/metrics.csv")
 df1$lat <- ifelse(df1$Data=="Coral Sea", -df1$lat, df1$lat)
 
 unique(df1$Site)
 ######################################################
 #---------------------------------------------#  metrics
 
-labs <- read.csv("data/output/PCAlabs.csv")
+labs <- read.csv("data/info/PCAlabs.csv")
 
 df1$log_N <- log(df1$f.N)
 df1$log_biomass <- log(df1$f.biomass)
@@ -78,7 +79,7 @@ sum(vars1a[1:6])
 loadings <- abs(pca1a$rotation[,1:6])
 rownames(loadings)[apply(loadings,2,which.max)]
 
-### chat GPT method
+### new method
 variable_scores <- apply(loadings, 1, max)
 top_vars <- sort(variable_scores, decreasing=T)
 top_6 <- names(top_vars)[1:6]
@@ -169,7 +170,7 @@ pcor<-cor(df1[,ords$axes1a], use="pairwise.complete.obs")
 #write.csv(pcor, "cor_output.csv")
 ggcorrplot(pcor,type="upper")
 
-########## CHAT GPT clustering method. 
+########## new clustering method. 
 
 dist_mat <- as.dist(1 - abs(pcor)) # uncorrelated variables = 1
 hc <- hclust(dist_mat, method="complete")
@@ -206,7 +207,6 @@ source("figs/fig1.R")
 
 six <- c("covsqrt", "Complexity", "simpD", "log_biomass", "alg_ratio", "FsimpD")
 
-# CHAT GPT recommend
 
 # PCA reconstruction. 
 
