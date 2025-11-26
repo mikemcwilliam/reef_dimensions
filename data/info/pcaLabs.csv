@@ -1,0 +1,23 @@
+lab,lab2,ord,ord2,group,scale,dim,ord3
+coral,coral %,2,2,coral,cov_scale,,1
+Complexity,complexity (1-5),7,1,complexity,comp_scale,,14
+p60,% >60cm,,,coral,,,
+p10,% <10cm,,,coral,,,
+simpD,Morph. div (D),8,3,coral,div_scale,,13
+log_biomass,fish Biomass,10,10,fish,mass_scale,,7
+algae,macroalgae %,11,11,algae,,,6
+turf,turf %,1,12,algae,,,4
+f.richness,Fish richness,13,9,fish,rich_scale,,8
+P.herb,Herbivore %,5,6,fish,,,9
+alg_ratio,CCA ratio,12,13,algae,alg_scale,,5
+FsimpD,Feeding div. (D),6,8,fish,fdiv_scale,,11
+comp1,coral Comp.1,3,4,coral,,,2
+comp2,coral Comp.2,9,5,coral,,,12
+acro,acropora ratio,4,5.5,coral,,,3
+complexity,complexity (1-5),7,1,complexity,comp_scale,,14
+covsqrt,coral %,2,2,coral,cov_scale,,1
+algsqrt,macroalgae %,11,11,algae,alg_scale,,6
+turfsqrt,turf %,1,12,algae,,,4
+P.carn,Carnivore %,14,7,fish,,,10
+richsqrt,Fish richness,13,9,fish,rich_scale,,8
+acrosqrt,acropora ratio,4,5.5,coral,,,3
