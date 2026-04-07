@@ -358,13 +358,13 @@ geom_point(size=0.5)+geom_line()+facet_wrap(~y, scales="free", nrow=3)
 
 maxmin <- read.csv("data/output/minmaxD.csv")
 head(maxmin)
-maxminT <- aggregate(n ~ id+type+t+morph8+simpDx, maxmin[maxmin$group=="HC",], sum )
+maxminT <- aggregate(n ~ id+type+t+morph8b+simpDx, maxmin[maxmin$group=="HC",], sum )
 maxDs <- maxminT[maxminT$type =="high D",]
 minDs <- maxminT[maxminT$type =="low D",]
 maxminC <- aggregate(n ~ id+type+t+simpDx, maxminT, sum )
 maxminC
 
-ggplot(maxminT, aes(y=morph8, x=n, fill=t))+geom_bar(stat="identity", position="dodge")+facet_grid(~type)
+ggplot(maxminT, aes(y=morph8b, x=n, fill=t))+geom_bar(stat="identity", position="dodge")+facet_grid(~type)
 
 #---------------------------------------------# model cover vs SimpD
 library("mgcv")
@@ -418,9 +418,9 @@ annotate(geom = 'text', x = 0.8, y = 0,    label = paste("R^2 == ", rsq), parse 
 ###################################################### fig3
 
 source("figs/fig3.R")
-FIG3
+FIG3s
 
-# ggsave("figs/Fig3.jpg", FIG3, height=4.8, width=6.5)
+# ggsave("figs/Fig3.jpg", FIG3s, height=4.8, width=6.5)
 
 ######################################################
 #---------------------------------------------#  size structure

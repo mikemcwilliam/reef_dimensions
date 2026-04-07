@@ -541,8 +541,11 @@ minmaxD <- rbind(cbind(maxDs, type="high D"), cbind(minDs, type="low D"))
 
 minmaxD$simpDx <- b1t$simpD[match(minmaxD$id, b1t$id)]
 minmaxD$morph8 <- b1fg$morph8[match(minmaxD$variable, b1fg$taxon)]
+minmaxD$morph8b <- b1fg$morph8b[match(minmaxD$variable, b1fg$taxon)]
 head(minmaxD)
 unique(minmaxD$id)
+
+
 
 # write.csv( minmaxD, "data/output/minmaxD.csv")
 
