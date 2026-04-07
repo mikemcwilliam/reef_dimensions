@@ -15,11 +15,10 @@ library("grid")
 #---------------------------------------------#  data
 
 df1 <- read.csv("data/data.csv")
-#df1 <- read.csv("data/output/metrics.csv")
+#df1 <- read.csv("data/metrics/metrics.csv")
 df1$lat <- ifelse(df1$Data=="Coral Sea", -df1$lat, df1$lat)
 df1 <- df1[!df1$Marine.Park=="Lord Howe Marine Park",]
 head(df1)
-
 
 ######################################################
 #---------------------------------------------#  metrics
@@ -403,6 +402,8 @@ geom_line(data=fit, aes(coral, fit), col="red")
 c1 <- df1[df1$Data=="Coral Sea",]
 head(c1)
 
+c1$FDis[c1$coral==0]<-0
+
 linkmod <- summary(lm(simpD~sqrt(FDis), c1))
 linkmod
 rsq <- round(linkmod$r.squared, 2)
@@ -412,6 +413,7 @@ geom_point(shape=21, size=0.5)+
 geom_smooth(method="lm", col="blue", size=0.3)+
 scale_y_sqrt()+
 annotate(geom = 'text', x = 0.8, y = 0,    label = paste("R^2 == ", rsq), parse = TRUE, size=2.5, col="blue")
+
 
 ###################################################### fig3
 
@@ -423,10 +425,15 @@ FIG3
 ######################################################
 #---------------------------------------------#  size structure
 
+c1 <- df1[df1$Data=="Coral Sea",]
+head(c1)
+
+#c1$p10[c1$coral==0]<-0
+
 #summary(lm(frich~coral_cover, tdf))
 #summary(lm(frich~coral_cover*A_SECTOR, tdf))
 
-bimod <- glm(p10~coral, family="quasibinomial", data=df1)
+bimod <- glm(p10~coral, family="quasibinomial", data=c1)
 summary(bimod)
 bifit <- data.frame(coral = seq(min(c1$coral, na.rm=T), max(c1$coral, na.rm=T), 1))
 bifit$fit <- predict(bimod, bifit, type="response")
@@ -440,7 +447,7 @@ ggplot()+geom_line(data=bifit, aes(coral, fit))+geom_point(data=c1, aes(coral, p
 colz <- c("#b2182b", "#f4a582", "#92c5de", "#2166ac")
 names(colz) <- c("s.neg", "ns.neg", "ns.pos", "s.pos")
 head(c1)
-df1$p60sqrt <- sqrt(df1$p60) #  <- ((c1$coral)/max(c1$coral)) * c1$simpD
+c1$p60sqrt <- sqrt(c1$p60) #  <- ((c1$coral)/max(c1$coral)) * c1$simpD
 reefs <- NULL
 bifits <- NULL
 Ys <- c("p10", "p60")

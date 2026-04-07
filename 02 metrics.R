@@ -953,9 +953,9 @@ colnames(comb2)==colnames(comb1)
 
 comb <- rbind(comb2, comb1)
 
-write.csv(c2, "data/output/metricsLTMP.csv")
-write.csv(c1, "data/output/metricsCS.csv")
-write.csv(comb, "data/output/metrics.csv")
+write.csv(c2, "data/metrics/metricsLTMP.csv")
+write.csv(c1, "data/metrics/metricsCS.csv")
+write.csv(comb, "data/metrics/metrics.csv")
 
 
 
