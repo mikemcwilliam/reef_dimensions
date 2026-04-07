@@ -8,6 +8,7 @@ library("reshape2")
 library("lubridate")
 library("vegan")
 library("psych")
+library("FD")
 
 ######################################################
 #---------------------------------------------#  Coral Sea (benthos)
@@ -103,6 +104,7 @@ b1ac <- aggregate(n ~ id, b1[b1$acro=="yes",], sum)
 b1t$acro <- b1ac$n[match(b1t$id, b1ac$id)] / b1t$coral
 
 
+
 ######################################################
 #---------------------------------------------#  MULTIDIMENSIONAL?
 
@@ -121,6 +123,64 @@ geom_segment(data=vecs, aes(x=0, xend=PC1*3, y=0, yend=PC2*3))+
 geom_text(data=vecs, aes(x=PC1*4, y=PC2*4, label=lab))
 
 ggplot(b1t, aes(comp1, simpD))+geom_point()
+
+
+
+######################################################
+#---------------------------------------------#  Functional Div. 
+
+head(b1t)
+df2 <- read.csv("data/output/coraltraits.csv")
+
+
+coord <- aggregate(dim1~link, df2, mean)
+coord$dim2 <- aggregate(dim2~link, df2, mean)$dim2
+coord$dim3 <- aggregate(dim3~link, df2, mean)$dim3
+coord$dim4 <- aggregate(dim4~link, df2, mean)$dim4
+coord
+ggplot() +
+  geom_point(data=df2, aes(dim1, dim2), shape=21, size=0.5, stroke=0.25, col="black")+
+geom_point(data=coord, aes(dim1, dim2), col="red")
+
+
+b1$dim1 <- coord$dim1[match(b1$variable, coord$link)]
+b1$dim2 <- coord$dim2[match(b1$variable, coord$link)]
+b1$dim3 <- coord$dim3[match(b1$variable, coord$link)]
+b1$dim4 <- coord$dim4[match(b1$variable, coord$link)]
+unique(b1[b1$group=="HC",c("variable", "dim1", "dim2")])
+
+# fdisp function
+temp <- na.omit(b1[b1$group=="HC" & b1$Total.HARD.CORAL>0, c("Site", "id", "variable", "n", "dim1", "dim2", "dim3", "dim4")])
+abuns <-acast(temp, id~variable, value.var="n") #n
+colSums(abuns)
+coord2 <- unique(temp[,c("variable", "dim1","dim2", "dim3", "dim4")])
+tr.dat <- dist(data.frame(coord2[,c("dim1", "dim2", "dim3")], row.names=coord2$variable))
+disp <-	data.frame(FDis=fdisp(a=abuns, tr.dat)$FDis)
+
+b1t$FDis <- disp$FDis[match(b1t$id, rownames(disp) )]
+
+siteFD <- aggregate(FDis~Site, b1t, mean)
+siteFD <- siteFD[order(siteFD$FDis),]
+head(siteFD)
+tail(siteFD)
+max(siteFD$FDis, na.rm=T)
+
+maxFDs <-  b1[b1$Site %in% siteFD[nrow(siteFD)-1,"Site"],] #temp[temp$Site %in% siteFD[siteFD$FDis %in% max(siteFD$FDis, na.rm=T),"Site"][1],]
+maxplot <- aggregate(n~Site+dim1+dim2+variable, maxFDs, sum )
+minFDs <- b1[b1$Site %in% siteFD[1,"Site"],]  #temp[temp$Site %in% siteFD[siteFD$FDis %in% min(siteFD$FDis, na.rm=T),"Site"][1],]
+minplot <- aggregate(n~Site+dim1+dim2+variable, minFDs, sum )
+head(minplot)
+
+exampleFD <- rbind(cbind(maxplot, type="HighFD"),cbind(minplot, type="LowFD"))
+#write.csv(exampleFD, "data/output/exampleFD.csv")
+
+ggplot() +
+  geom_point(data=df2, aes(dim1, dim2), size=0.15,  col="grey")+
+  geom_segment(data=maxplot[maxplot$n > 0,], aes(x=0, xend=dim1, y=0, yend=dim2), col="black", size=0.3)+ #"#5ab4ac"
+geom_point(data=maxplot[maxplot$n > 0,], aes(dim1, dim2, size=n), fill="black", shape=21, stroke=0.5, col="white")+
+geom_segment(data=minplot[minplot$n > 0,], aes(x=0, xend=dim1, y=0, yend=dim2), col="red", linetype="dotted")+
+  geom_point(data=minplot[minplot$n > 0,], aes(dim1, dim2, size=n), col="red", shape=21)+
+scale_radius(range=c(1,6))
 
 
 ######################################################
@@ -153,8 +213,6 @@ s1$pit <- s1FG$pit_name[match(s1$Genus, s1FG$taxon)]
 s1$group <- s1FG$group[match(s1$Genus, s1FG$taxon)]
 head(s1)
 
-
-
 unique(s1$pit)
 
 scols <- c("Year", "Date",  "SectorRegion", "Reef", "Site", "Zone", "Transect", "id")
@@ -182,6 +240,7 @@ s1coral$p <- s1coral$value / s1coral$tot
 head(s1coral)
 
 ggplot(s1coral[s1coral$id %in% unique(s1coral$id)[100:110],], aes(size, p))+geom_point()+geom_line(aes(group=id), size=0.1)
+
 
 # proportion of corals under 10
 p10 <- s1coral[s1coral$size %in% c("00 - 05", "06 - 10"),]
@@ -213,7 +272,6 @@ s1s$max <- ifelse(s1s$variable=="Total.recruits",0, ifelse(s1s$variable=="X6.10c
 
 s1s$min <- ifelse(s1s$variable=="Total.recruits",0, ifelse(s1s$variable=="X6.10cm", 6, ifelse(s1s$variable=="X11.20cm", 11, ifelse(s1s$variable=="X21.40cm", 21, ifelse(s1s$variable=="X41.60cm", 41, ifelse(s1s$variable=="X.60cm", 60, NA))))))
 
-
 s1s$morph <- b1fg$morph8[match(s1s$pit, b1fg$taxon)]
 unique(s1s$morph)
 s1s$morph[s1s$morph=="Foliose"] <- "Acr. tabular" # assume similar
@@ -223,7 +281,6 @@ s1s$morph[s1s$morph=="Acr. bushy"] <- "Acr. tabular" # assume similar
 s1s$morph[s1s$morph=="Acr. Bushy"] <- "Acr. tabular" # assume similar
 s1s$morph[s1s$morph=="Bushy (other)"] <- "Columnar" # assume similar
 unique(s1s[,c("pit", "morph")])
-
 
 shelt <- na.omit(s1s[!s1s$morph %in% c("none", "Encrusting"),]) # assume zero
 unique(shelt$morph)
@@ -427,7 +484,7 @@ check2
 nrow(na.omit(check2))
 
 check[is.na(check$fish),] # no Fish
-lengthcheck[is.na(check$fish),]
+length(check[is.na(check$fish),])
 # check[is.na(check$pit),] # all PIT present in fish 
 
 c1 <- b1t
@@ -457,13 +514,52 @@ summary(lm(sqrt(shelt)~coral, c1))
 ggplot(c1, aes(f.N, f.biomass))+geom_point()+geom_smooth(se=F, method="lm")+scale_x_log10()+scale_y_log10()
 
 ######################################################
-#---------------------------------------------#  Coral Sea LAT/LONGs - GET FROM MORGAN
+#---------------------------------------------#  Coral Sea LAT/LONGs 
 
 ll1 <- read.csv("data/CoralSea/latlongs.csv")
 c1$lat <- ll1$GPS.Smm[match(c1$Reef, ll1$ReefMM)]
 c1$long <- ll1$GPS.Emm[match(c1$Reef, ll1$ReefMM)]
 head(c1)
 
+######################################################
+#---------------------------------------------#  Extract min/max Div 
+
+ext <- b1
+
+maxD <- ext[ext$id %in% c1[c1$simpD == max(c1$simpD[c1$coral>0]),"id"][1],]
+maxDlow <- ext[ext$id %in% c1[c1$simpD == max(c1$simpD[c1$coral <20]),"id"][1],]
+maxDhigh <- ext[ext$id %in% c1[c1$simpD == max(c1$simpD[c1$coral > 60]),"id"][1],]
+minD1 <- ext[ext$id %in% c1[c1$simpD == min(c1$simpD[c1$coral>10]),"id"][1],]
+minD2 <- ext[ext$id %in% c1[c1$simpD == min(c1$simpD[c1$coral>60]),"id"][1],]
+
+maxDs <- rbind(cbind(maxD,t="ii"), cbind(maxDlow,t="i"), cbind(maxDhigh,t="iii"))
+minDs <- rbind(cbind(minD1,t="iv"), cbind(minD2,t="v"))
+
+colnames(maxDs)==colnames(minDs)
+
+minmaxD <- rbind(cbind(maxDs, type="high D"), cbind(minDs, type="low D"))
+
+minmaxD$simpDx <- b1t$simpD[match(minmaxD$id, b1t$id)]
+minmaxD$morph8 <- b1fg$morph8[match(minmaxD$variable, b1fg$taxon)]
+head(minmaxD)
+unique(minmaxD$id)
+
+# write.csv( minmaxD, "data/output/minmaxD.csv")
+
+######################################################
+#---------------------------------------------#  size fig
+
+source("figs/SUPPLEMENT/figS5.R")
+figS5
+
+# ggsave("figs/SUPPLEMENT/figS5.jpg", figS5, height=3, width=6)
+
+######################################################
+######################################################
+######################################################
+######################################################
+######################################################
+######################################################
 ######################################################
 #---------------------------------------------#  LTMP benthos
 
@@ -792,6 +888,13 @@ labs(x=paste("PCA 1 (", vars[1], "%)", sep=""),y=paste("PCA 2 (", vars[2], "%)",
 geom_segment(data=vecs2, aes(x=0, xend=PC1*3, y=0, yend=PC2*3))+
 geom_text(data=vecs2, aes(x=PC1*4, y=PC2*4, label=lab))
 
+######################################################
+#---------------------------------------------#  FD
+
+c2$FDis <- NA # check groups
+c2$p10 <- NA
+c2$p60 <- NA
+c2$shelt <- NA
 
 ######################################################
 #---------------------------------------------#  MULTIDIMENSIONAL fish?
@@ -832,10 +935,11 @@ head(ll2)
 c2$lat <- ll2$REEF_LAT[match(c2$REEF_NAME, ll2$REEF_NAME)]
 c2$long <- ll2$REEF_LONG[match(c2$REEF_NAME, ll2$REEF_NAME)]
 
+
 ######################################################
 #---------------------------------------------#  combine/save
 
-metrics <- c("id", "coral", "algae", "turf", "soft", "cca", "simpD", "shanH", "acro", "comp1", "comp2", "f.biomass","f.biomassT", "f.N", "f.richness", "N.herb", "N.carn", "FshanH", "FsimpD", "FsimpD2","fcomp1", "fcomp2","Complexity", "lat", "long")
+metrics <- c("id", "coral", "algae", "turf", "soft", "cca", "simpD", "shanH", "acro", "comp1", "comp2","FDis", "f.biomass","f.biomassT", "f.N", "f.richness", "N.herb", "N.carn", "FshanH", "FsimpD", "FsimpD2","fcomp1", "fcomp2","Complexity", "p10", "p60","shelt", "lat", "long")
 
 head(c1)
 head(c2)
@@ -852,6 +956,12 @@ comb <- rbind(comb2, comb1)
 write.csv(c2, "data/output/metricsLTMP.csv")
 write.csv(c1, "data/output/metricsCS.csv")
 write.csv(comb, "data/output/metrics.csv")
+
+
+
+latlons <- unique(comb[,c("Marine.Park", "Data", "lat", "long")])
+write.csv(latlons, "data/info/latlons.csv")
+
 
 
 

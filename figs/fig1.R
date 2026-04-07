@@ -12,8 +12,8 @@
 library("sf")
 library("rworldmap")
 
-sites <- unique(df1[,c("Data", "SectorRegion", "Reef", "lat", "long")])
-
+sites <- read.csv("data/info/latlons.csv")
+sites$lat[sites$Data=="Coral Sea"] <- - sites$lat[sites$Data=="Coral Sea"]
 # add colours
 #rcols <- regs$col
 #names(rcols) <- regs$name
@@ -203,13 +203,13 @@ pdf$group1 <- factor(pdf$group1, levels=rev(c("complexity", "coral", "fish", "al
 pdf$group2 <- factor(pdf$group2, levels=c("complexity", "coral", "fish", "algae"))
 
 
-tab.s<-readPNG("data/sils/tabular.png")
+tab.s<-readPNG("figs/sils/tabular.png")
 tab.s<-rasterGrob(tab.s, interpolate=TRUE)
-fish.s<-readPNG("data/sils/fish2.png")
+fish.s<-readPNG("figs/sils/fish2.png")
 fish.s<-rasterGrob(fish.s, interpolate=TRUE)
-comp.s<-readPNG("data/sils/comp2.png")
+comp.s<-readPNG("figs/sils/comp2.png")
 comp.s<-rasterGrob(comp.s, interpolate=TRUE)
-alg.s<-readPNG("data/sils/algae3.png")
+alg.s<-readPNG("figs/sils/algae3.png")
 alg.s<-rasterGrob(alg.s, interpolate=TRUE)
 
 
@@ -243,7 +243,7 @@ pcorplot2 <- plot_grid(NULL, plot_grid(pcorplot, NULL, nrow=1, rel_widths=c(1,-0
 ppA12<- plot_grid(NULL, plot_grid(NULL, ppA1+guides(col="none"),NULL, ncol=1, rel_heights=c(0.8,1, -0.3), labels=c("", "d", ""), label_size=9, hjust=-15, vjust=7),NULL, nrow=1, rel_widths=c(-0.5, 1, -0.05))
 
 
-fig1X2<- plot_grid(
+fig1<- plot_grid(
 plot_grid(
 plot_grid(map, NULL, dhw_plot, ncol=1, labels=c("a","", "b"), label_size=9, rel_heights=c(1,0.2,1)),
 plot_grid(pcorplot2, ppA12, rel_widths=c(2, 1.2)),
@@ -259,9 +259,8 @@ draw_grob(comp.s, x=0.44, y=0.43, height=0.05, width=0.05)+
 draw_grob(alg.s, x=0.81, y=0.765, height=0.03, width=0.05)
 #draw_line(x=c(0.2, 0.31), y=c(0.11, 0.22))
 #draw_line(x=c(0.2, 0.31), y=c(0.11, 0.22))
-fig1X2
+fig1
 
-# ggsave("figs/Fig1.jpg", fig1X2, height=7, width=6.9)
 
 
 
