@@ -1,4 +1,3 @@
-
 rm(list = ls())
 
 library("ggplot2")
@@ -616,11 +615,6 @@ theme_classic()+theme(strip.background=element_blank(), axis.line=element_line(s
 
 
 ##### other
-ggplot(df1, aes(coral, alg_ratio, col=turf))+geom_point(size=0.5)+
-scale_colour_viridis()+
-facet_wrap(~Data)+
-labs(x="% coral cover", y="CCA ratio", col="% turf\ncover")+
-theme_classic()+theme(strip.background=element_blank())
 
 ggplot(df1, aes(alg_ratio, P.herb))+geom_point(size=0.5)+
 scale_colour_viridis()+
